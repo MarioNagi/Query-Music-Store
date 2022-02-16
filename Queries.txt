@@ -1,47 +1,51 @@
 Query 1 - Top 10 Genre by Revenue
 
+ 
 WITH t1 AS
-  (SELECT Track.Name,
-          Track.GenreId,
+  (SELECT Track.GenreId,
           sum(InvoiceLine.UnitPrice*InvoiceLine.Quantity) AS total_price
    FROM InvoiceLine
    JOIN Track ON Track.TrackId=InvoiceLine.TrackId
-   GROUP BY Track.Name
+   GROUP BY 1
    ORDER BY total_price DESC)
-SELECT Genre.Name,
-       t1.Name,
+SELECT Genre.Name AS Genre_Name,
        sum(t1.total_price)AS genre_total_price
 FROM t1
 JOIN Genre ON Genre.Genreid=t1.Genreid
 GROUP BY Genre.Name
 ORDER BY genre_total_price DESC
 LIMIT 10;
-
 ________________________________________________________________________________
 
 Query 2 - total sales made by sales agents 
 
 SELECT e.EmployeeId,
-       (e.FIRSTNAME ||' ' || e.LASTNAME) AS Full_Name,
-       count(c.SupportRepId)AS No_of_sales,
-       round(sum(i.total), 2) AS total_payment
+      (e.FIRSTNAME ||' ' || e.LASTNAME) AS Full_Name,
+       COUNT(c.SupportRepId)AS No_of_sales,
+       ROUND(SUM(i.total), 2) AS total_payment
 FROM Employee e
-JOIN Customer c ON e.EmployeeId=c.SupportRepId
-JOIN invoice i ON i.CustomerId=c.CustomerId
-GROUP BY e.EmployeeId
+JOIN Customer c
+ON e.EmployeeId=c.SupportRepId
+JOIN invoice i
+ON i.CustomerId=c.CustomerId
+GROUP BY 1,2
 
 ________________________________________________________________________________
 
 Query 3 - preferred music format (Most sold format)
 
 SELECT m.Name,
-       count(t.GenreId) AS total_sold,
-       round(sum(inl.UnitPrice* Quantity), 2) AS total_price
+       COUNT(t.GenreId) AS total_sold,
+       ROUND(SUM(inl.UnitPrice* Quantity), 2) AS total_price
+
 FROM MediaType m
-JOIN Track t ON t.MediaTypeId=m.MediaTypeId
-JOIN InvoiceLine inl ON t.TrackId=inl.TrackId
+JOIN Track t 
+ON t.MediaTypeId = m.MediaTypeId
+JOIN InvoiceLine inl 
+ON t.TrackId = inl.TrackId
 GROUP BY 1
 ORDER BY 3 DESC
+
 
 ________________________________________________________________________________
 
@@ -50,10 +54,14 @@ Query 4 - Top 10 Albums based on Revenue
 SELECT al.title AS Album_Name,
        art.name AS Artist_Name,
        SUM(inl.unitprice * inl.quantity) AS total_Sales
+
 FROM Artist art
-JOIN Album al ON art.artistid = al.artistid
-JOIN Track t ON al.albumid = t.albumid
-JOIN InvoiceLine inl ON inl.trackid = t.trackid
-GROUP BY 1
+JOIN Album al 
+ON art.artistid = al.artistid
+JOIN Track t 
+ON al.albumid = t.albumid
+JOIN InvoiceLine inl 
+ON inl.trackid = t.trackid
+GROUP BY 1,2
 ORDER BY 3 DESC
 LIMIT 10;
